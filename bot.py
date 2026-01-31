@@ -1,234 +1,209 @@
+
+# 8045767418:AAF7XXhXqG9a_uT2uQaEAPiFaRWpTYQltds
+# 7788334322 
+
 import asyncio
 import logging
+import sqlite3
 import os
-from io import BytesIO
+from aiogram import Bot, Dispatcher, types, F
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton, FSInputFile
+from aiogram.filters import Command
+from aiogram.fsm.storage.memory import MemoryStorage
 
-from aiogram import Bot, Dispatcher, F, Router
-from aiogram.filters import CommandStart
-from aiogram.types import (
-    Message, 
-    BufferedInputFile, 
-    InlineKeyboardMarkup, 
-    InlineKeyboardButton,
-    CallbackQuery
-)
-from PIL import Image
+# --- KONFIGURATSIYA ---
+API_TOKEN = '8045767418:AAF7XXhXqG9a_uT2uQaEAPiFaRWpTYQltds'
+ADMIN_ID = 7788334322  # O'zingizning ID
+CHANNELS = ["@colinuzb", "@colincode", "@ibrohimweb"] 
 
-# ==========================================
-# ⚙️ SOZLAMALAR
-# ==========================================
-# 👇 TOKENNI SHU YERGA YOZING
-BOT_TOKEN = "8045767418:AAF7XXhXqG9a_uT2uQaEAPiFaRWpTYQltds"
-
-# Skinlar turadigan papka nomi
-SKINS_FOLDER = "skins"
-
-# Loglarni yoqish (xatolarni ko'rish uchun)
 logging.basicConfig(level=logging.INFO)
+bot = Bot(token=API_TOKEN)
+dp = Dispatcher(storage=MemoryStorage())
 
-# ==========================================
-# 🎨 RASM ISHLASH (SKIN RENDERER)
-# ==========================================
-class SkinRenderer:
-    @staticmethod
-    def get_head(skin_path: str):
-        """Skin faylidan faqat Bosh qismini qirqib oladi"""
+# --- BAZA ---
+db = sqlite3.connect("bot_users.db")
+cursor = db.cursor()
+cursor.execute("CREATE TABLE IF NOT EXISTS users (user_id INTEGER PRIMARY KEY)")
+db.commit()
+
+# --- MA'LUMOTLAR BAZASI (DATA) ---
+# Bu yerda har bir tugma uchun ma'lumotlarni yozib chiqamiz.
+# Title, Description va Linkni shu yerdan o'zgartirasiz.
+CONTENT_DATA = {
+    # O'yinlar
+    "Minecraft": {"title": "Minecraft 1.19.8v", "desc": "Minecraft 2025 yili colin tomonidan vzlom qilingan versiya.", "link": "https://t.me/fayl_manzili"},
+    "Pubg": {"title": "PUBG Mobile", "desc": "Eng so'nggi versiya, 90 FPS ochilgan.", "link": "https://play.google.com"},
+    "Gta V": {"title": "GTA V Mobile", "desc": "Grafikasi kuchaytirilgan norasmiy port.", "link": "https://example.com"},
+    "Call Of Duty": {"title": "Call of Duty Mobile", "desc": "Jangovar rejim va yangi xaritalar.", "link": "https://example.com"},
+    "Zombie Catshers": {"title": "Zombie Catchers", "desc": "Cheksiz pullar bilan mod qilingan.", "link": "https://example.com"},
+    "Farm Ville 2": {"title": "FarmVille 2", "desc": "Fermer xo'jaligi simulyatori.", "link": "https://example.com"},
+    "Extreme Car": {"title": "Extreme Car Driving", "desc": "Barcha mashinalar ochilgan.", "link": "https://example.com"},
+    "Dr,Driving": {"title": "Dr. Driving", "desc": "Afsonaviy mashina haydash o'yini.", "link": "https://example.com"},
+    
+    # Ilovalar
+    "Telegram": {"title": "Telegram Premium", "desc": "Premium funksiyalar (norasmiy).", "link": "https://example.com"},
+    "YouTube": {"title": "YouTube Vanced", "desc": "Reklamasiz YouTube ko'rish.", "link": "https://example.com"},
+    "Node Video": {"title": "Node Video Pro", "desc": "Professional video montaj dasturi.", "link": "https://example.com"},
+    "Cap Cut": {"title": "CapCut Pro", "desc": "Barcha effektlar ochiq.", "link": "https://example.com"},
+    "Alight Motion": {"title": "Alight Motion XML", "desc": "Suv belgisisiz (No Watermark).", "link": "https://example.com"},
+    "Zarchiver": {"title": "ZArchiver Pro", "desc": "Fayllarni arxivlash uchun eng zo'r dastur.", "link": "https://example.com"},
+
+    # Dasturlar
+    "ChatGpt": {"title": "ChatGPT AI", "desc": "Sun'iy intellekt yordamchisi.", "link": "https://openai.com"},
+    "KreaAi": {"title": "Krea AI", "desc": "Rasmlarni generatsiya qilish.", "link": "https://krea.ai"},
+    "Design": {"title": "Design Tools", "desc": "Dizaynerlar uchun kerakli to'plam.", "link": "https://example.com"},
+    "Upscaler": {"title": "Image Upscaler", "desc": "Rasm sifatini oshiruvchi dastur.", "link": "https://example.com"},
+    "Enhancer": {"title": "Photo Enhancer", "desc": "Eski rasmlarni tiklash.", "link": "https://example.com"},
+
+    # Packlar
+    "ColinShop": {"title": "Colin Shop Pack", "desc": "Internet magazin uchun tayyor kodlar.", "link": "https://example.com"},
+    "Responsive": {"title": "Responsive UI", "desc": "Moslashuvchan dizayn elementlari.", "link": "https://example.com"},
+    "Navbar": {"title": "Navbar Pack", "desc": "Saytlar uchun menyu turlari.", "link": "https://example.com"},
+    "Animated": {"title": "Animated Pack", "desc": "CSS va JS animatsiyalar.", "link": "https://example.com"},
+    "Host": {"title": "Hosting Script", "desc": "Hosting sayti uchun shablon.", "link": "https://example.com"},
+    "Portfolio": {"title": "Portfolio Web", "desc": "Shaxsiy portfolio sayt shabloni.", "link": "https://example.com"},
+}
+
+# --- TUGMALAR MENU ---
+def main_menu(user_id):
+    kb = [
+        [KeyboardButton(text="O'yinlar"), KeyboardButton(text="Ilovalar")],
+        [KeyboardButton(text="Dasturlar"), KeyboardButton(text="Packlar")],
+        [KeyboardButton(text="Fayllar")]
+    ]
+    if user_id == ADMIN_ID:
+        kb.append([KeyboardButton(text="⚙️ Sozlama"), KeyboardButton(text="📊 Status")]) # Reklama olib tashlandi
+    return ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
+
+def sub_channels_kb():
+    builder = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text=f"Obuna bo'lish: {ch}", url=f"https://t.me/{ch[1:]}")] for ch in CHANNELS
+    ])
+    builder.inline_keyboard.append([InlineKeyboardButton(text="✅ Tasdiqlash", callback_data="check_subs")])
+    return builder
+
+# Orqaga tugmasi
+back_kb = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text="⬅️ Orqaga")]], resize_keyboard=True)
+
+# --- OBUNA TEKSHIRISH ---
+async def is_subscribed(user_id):
+    for ch in CHANNELS:
         try:
-            img = Image.open(skin_path).convert("RGBA")
-            # Minecraft skinida Bosh qismi: (8, 8) dan (16, 16) gacha
-            head = img.crop((8, 8, 16, 16)) 
-            # 8x8 rasmni 256x256 ga kattalashtiramiz
-            head = head.resize((256, 256), resample=Image.Resampling.NEAREST)
-            return head
-        except Exception as e:
-            print(f"Rasm xatosi: {e}")
-            return None
+            member = await bot.get_chat_member(chat_id=ch, user_id=user_id)
+            if member.status in ["left", "kicked"]:
+                return False
+        except:
+            return False
+    return True
 
-    @staticmethod
-    def get_body(skin_path: str):
-        """Skin faylidan Tana (Body) yasaydi"""
-        try:
-            img = Image.open(skin_path).convert("RGBA")
-            
-            # Yangi bo'sh kanvas (160x320)
-            canvas = Image.new("RGBA", (160, 320), (0, 0, 0, 0))
-            
-            # Qismlarni qirqib olish va kattalashtirish (x10)
-            head = img.crop((8, 8, 16, 16)).resize((80, 80), Image.Resampling.NEAREST)
-            body = img.crop((20, 20, 28, 32)).resize((80, 120), Image.Resampling.NEAREST)
-            arm = img.crop((44, 20, 48, 32)).resize((40, 120), Image.Resampling.NEAREST)
-            leg = img.crop((4, 20, 8, 32)).resize((40, 120), Image.Resampling.NEAREST)
+# --- HANDLERLAR ---
 
-            # Yopishtirish (Koordinatalar bo'yicha)
-            canvas.paste(head, (40, 0))    # Bosh
-            canvas.paste(body, (40, 80))   # Tana
-            canvas.paste(arm, (0, 80))     # O'ng qo'l
-            canvas.paste(arm, (120, 80))   # Chap qo'l
-            canvas.paste(leg, (40, 200))   # O'ng oyoq
-            canvas.paste(leg, (80, 200))   # Chap oyoq
+@dp.message(Command("start"))
+async def start_handler(message: types.Message):
+    cursor.execute("INSERT OR IGNORE INTO users (user_id) VALUES (?)", (message.from_user.id,))
+    db.commit()
+    if await is_subscribed(message.from_user.id):
+        await message.answer("Bosh menyu:", reply_markup=main_menu(message.from_user.id))
+    else:
+        await message.answer("Botdan foydalanish uchun kanallarga a'zo bo'ling:", reply_markup=sub_channels_kb())
 
-            return canvas
-        except Exception as e:
-            print(f"Rasm xatosi: {e}")
-            return None
+@dp.callback_query(F.data == "check_subs")
+async def check_callback(call: types.CallbackQuery):
+    if await is_subscribed(call.from_user.id):
+        await call.message.delete()
+        await call.message.answer("Bosh menyu:", reply_markup=main_menu(call.from_user.id))
+    else:
+        await call.answer("To'liq obuna bo'lmadingiz!", show_alert=True)
 
-# ==========================================
-# ⌨️ TUGMALAR (KEYBOARDS)
-# ==========================================
-def get_skins_keyboard():
-    """Papkadagi fayllarga qarab tugma yasaydi"""
-    if not os.path.exists(SKINS_FOLDER):
-        os.makedirs(SKINS_FOLDER)
+@dp.message(F.text == "⬅️ Orqaga")
+async def back_to_main(message: types.Message):
+    await message.answer("Asosiy menyu:", reply_markup=main_menu(message.from_user.id))
+
+# --- MENYULAR ---
+
+@dp.message(F.text == "O'yinlar")
+async def games_menu(message: types.Message):
+    if not await is_subscribed(message.from_user.id): return
+    kb = ReplyKeyboardMarkup(keyboard=[
+        [KeyboardButton(text="Minecraft"), KeyboardButton(text="Pubg")],
+        [KeyboardButton(text="Gta V"), KeyboardButton(text="Call Of Duty")],
+        [KeyboardButton(text="Zombie Catshers"), KeyboardButton(text="Farm Ville 2")],
+        [KeyboardButton(text="Extreme Car"), KeyboardButton(text="Dr,Driving")],
+        [KeyboardButton(text="⬅️ Orqaga")]
+    ], resize_keyboard=True)
+    await message.answer("O'yinlar bo'limi:", reply_markup=kb)
+
+@dp.message(F.text == "Ilovalar")
+async def apps_menu(message: types.Message):
+    if not await is_subscribed(message.from_user.id): return
+    kb = ReplyKeyboardMarkup(keyboard=[
+        [KeyboardButton(text="Telegram"), KeyboardButton(text="YouTube")],
+        [KeyboardButton(text="Node Video"), KeyboardButton(text="Cap Cut")],
+        [KeyboardButton(text="Alight Motion"), KeyboardButton(text="Zarchiver")],
+        [KeyboardButton(text="⬅️ Orqaga")]
+    ], resize_keyboard=True)
+    await message.answer("Ilovalar bo'limi:", reply_markup=kb)
+
+@dp.message(F.text == "Dasturlar")
+async def soft_menu(message: types.Message):
+    if not await is_subscribed(message.from_user.id): return
+    kb = ReplyKeyboardMarkup(keyboard=[
+        [KeyboardButton(text="ChatGpt"), KeyboardButton(text="KreaAi")],
+        [KeyboardButton(text="Design"), KeyboardButton(text="Upscaler")],
+        [KeyboardButton(text="Enhancer"), KeyboardButton(text="⬅️ Orqaga")]
+    ], resize_keyboard=True)
+    await message.answer("Dasturlar bo'limi:", reply_markup=kb)
+
+@dp.message(F.text == "Packlar")
+async def packs_menu(message: types.Message):
+    if not await is_subscribed(message.from_user.id): return
+    kb = ReplyKeyboardMarkup(keyboard=[
+        [KeyboardButton(text="ColinShop"), KeyboardButton(text="Responsive")],
+        [KeyboardButton(text="Navbar"), KeyboardButton(text="Animated")],
+        [KeyboardButton(text="Host"), KeyboardButton(text="Portfolio")],
+        [KeyboardButton(text="⬅️ Orqaga")]
+    ], resize_keyboard=True)
+    await message.answer("Packlar bo'limi:", reply_markup=kb)
+
+# --- UNIVERSAL CONTENT HANDLER ---
+# Bu funksiya CONTENT_DATA ichidagi istalgan tugma bosilganda ishlaydi
+@dp.message(lambda message: message.text in CONTENT_DATA)
+async def send_content(message: types.Message):
+    if not await is_subscribed(message.from_user.id): return
     
-    # Faqat .png fayllarni o'qiymiz
-    files = [f for f in os.listdir(SKINS_FOLDER) if f.endswith(".png")]
-    files.sort()
+    data = CONTENT_DATA[message.text]
     
-    keyboard = []
-    row = []
-    for file in files:
-        name = file.replace(".png", "") # .png ni olib tashlaymiz
-        btn = InlineKeyboardButton(text=f"👤 {name}", callback_data=f"skin:{file}")
-        row.append(btn)
-        
-        # Har qatorda 2 tadan tugma
-        if len(row) == 2:
-            keyboard.append(row)
-            row = []
+    # Rasm nomini yasash (Kichik harf, probel va vergullarni olib tashlash)
+    # Misol: "Dr,Driving" -> "drdriving.png"
+    clean_name = message.text.lower().replace(" ", "").replace(",", "")
+    photo_path = f"img/{clean_name}.png"
     
-    if row:
-        keyboard.append(row)
-        
-    return InlineKeyboardMarkup(inline_keyboard=keyboard)
-
-def get_view_keyboard(filename):
-    """Ko'rinishni tanlash tugmasi"""
-    return InlineKeyboardMarkup(inline_keyboard=[
-        [
-            InlineKeyboardButton(text="👤 Bosh (Head)", callback_data=f"render:head:{filename}"),
-            InlineKeyboardButton(text="🕴 Tana (Body)", callback_data=f"render:body:{filename}")
-        ],
-        [
-            InlineKeyboardButton(text="🔙 Bosh Menyu", callback_data="back_home")
-        ]
+    caption_text = (
+        f"<b>{data['title']}</b>\n\n"
+        f"{data['desc']}\n\n"
+        f"🤖 @{ (await bot.get_me()).username}"
+    )
+    
+    download_btn = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="📥 Yuklab Olish", url=data['link'])]
     ])
 
-# ==========================================
-# 🤖 BOT MANTIQI (HANDLERS)
-# ==========================================
-router = Router()
-
-@router.message(CommandStart())
-async def start_cmd(message: Message):
-    # Papka bo'shligini tekshiramiz
-    files = [f for f in os.listdir(SKINS_FOLDER) if f.endswith(".png")]
-    
-    if not files:
-        await message.answer(
-            f"📂 **{SKINS_FOLDER}** papkasi bo'sh!\n\n"
-            "Iltimos, bot ishlashi uchun u yerga **.png** formatdagi skin tashlang."
-        )
-        return
-
-    await message.answer(
-        "👋 **Assalomu alaykum!**\n\n"
-        "Qaysi skinni tanlamoqchisiz? Marhamat:",
-        reply_markup=get_skins_keyboard()
-    )
-
-# ✅ TUZATILGAN "ORQAGA" TUGMASI
-@router.callback_query(F.data == "back_home")
-async def go_back(callback: CallbackQuery):
-    # Eski rasm xabarini o'chiramiz
-    try:
-        await callback.message.delete()
-    except:
-        pass 
-    
-    # Yangi menyu yuboramiz
-    await callback.message.answer(
-        "Asosiy menyu. Skinni tanlang:",
-        reply_markup=get_skins_keyboard()
-    )
-
-@router.callback_query(F.data.startswith("skin:"))
-async def select_skin(callback: CallbackQuery):
-    filename = callback.data.split(":")[1]
-    name = filename.replace(".png", "")
-    
-    # Bu yerda edit_text ishlaydi, chunki oldingi xabar matn edi
-    try:
-        await callback.message.edit_text(
-            f"✅ **{name}** tanlandi.\nQanday ko'rinishda xohlaysiz?",
-            reply_markup=get_view_keyboard(filename)
-        )
-    except:
-        # Agar rasm bo'lsa o'chirib yangitdan yozamiz
-        await callback.message.delete()
-        await callback.message.answer(
-            f"✅ **{name}** tanlandi.\nQanday ko'rinishda xohlaysiz?",
-            reply_markup=get_view_keyboard(filename)
-        )
-
-@router.callback_query(F.data.startswith("render:"))
-async def render_skin(callback: CallbackQuery):
-    _, type_, filename = callback.data.split(":")
-    path = os.path.join(SKINS_FOLDER, filename)
-    
-    if not os.path.exists(path):
-        await callback.answer("⚠️ Fayl topilmadi!", show_alert=True)
-        return
-
-    await callback.answer("Tayyorlanmoqda...")
-    
-    # Rasmni yasash
-    final_img = None
-    if type_ == "head":
-        final_img = SkinRenderer.get_head(path)
-        caption = f"👤 **{filename.replace('.png', '')}**"
-    elif type_ == "body":
-        final_img = SkinRenderer.get_body(path)
-        caption = f"🕴 **{filename.replace('.png', '')}**"
-
-    if final_img:
-        # Rasmni xotiraga olish
-        bio = BytesIO()
-        final_img.save(bio, 'PNG')
-        bio.seek(0)
-        
-        file = BufferedInputFile(bio.read(), filename=filename)
-        
-        # Eski xabarni o'chirib, rasm yuboramiz
-        await callback.message.delete()
-        await callback.message.answer_photo(
-            file, 
-            caption=caption,
-            reply_markup=get_view_keyboard(filename)
-        )
+    if os.path.exists(photo_path):
+        photo = FSInputFile(photo_path)
+        await message.answer_photo(photo=photo, caption=caption_text, reply_markup=download_btn, parse_mode="HTML")
     else:
-        await callback.message.answer("⚠️ Rasmni yasashda xatolik bo'ldi.")
+        # Agar rasm topilmasa, shunchaki text boradi (Error bermasligi uchun)
+        await message.answer(f"⚠️ Rasm topilmadi: {photo_path}\n\n" + caption_text, reply_markup=download_btn, parse_mode="HTML")
 
-# ==========================================
-# 🚀 ISHGA TUSHIRISH
-# ==========================================
+# --- ADMIN STATUS ---
+@dp.message(F.text == "📊 Status", F.from_user.id == ADMIN_ID)
+async def status_cmd(message: types.Message):
+    cursor.execute("SELECT COUNT(*) FROM users")
+    count = cursor.fetchone()[0]
+    await message.answer(f"📊 Botdagi jami foydalanuvchilar: {count} ta")
+
 async def main():
-    if "SIZNING" in BOT_TOKEN:
-        print("❌ XATO: Tokenni kod ichiga yozing!")
-        return
-
-    if not os.path.exists(SKINS_FOLDER):
-        os.makedirs(SKINS_FOLDER)
-
-    bot = Bot(token=BOT_TOKEN)
-    dp = Dispatcher()
-    dp.include_router(router)
-    
-    await bot.delete_webhook(drop_pending_updates=True)
-    print("✅ Bot ishga tushdi! Telegramga kiring.")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        print("Bot to'xtadi.")
+    asyncio.run(main())
