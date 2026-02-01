@@ -8,8 +8,11 @@ from aiogram.filters import Command
 from aiogram.fsm.storage.memory import MemoryStorage
 
 # --- KONFIGURATSIYA ---
-API_TOKEN = '8045767418:AAF7XXhXqG9a_uT2uQaEAPiFaRWpTYQltds'
-ADMIN_ID = 7788334322
+API_TOKEN = '7948805017:AAHHGGFYE6BTi96YbZaJDaTrNX91qHU2NXw'
+
+# O'ZGARISH #1: Adminlar ro'yxati (List) qilib yoziladi
+ADMINS = [7788334322, 8075485288, 12345678]
+
 CHANNELS = ["@colinuzb", "@colincode", "@ibrohimweb"]
 
 logging.basicConfig(level=logging.INFO)
@@ -28,66 +31,46 @@ CREATE TABLE IF NOT EXISTS users (
 """)
 db.commit()
 
-# --- 1. ODDIY MA'LUMOTLAR (O'yin, Ilova, Dastur, Pack) ---
+# --- CONTENT DATA ---
 CONTENT_DATA = {
     # O'yinlar
-    "Minecraft": {"title": "Minecraft 1.19.8v", "desc": "Minecraft 2025 yili colin tomonidan vzlom qilingan versiya.", "link": "https://t.me/colinuzb"},
-    "Pubg": {"title": "PUBG Mobile", "desc": "Eng so'nggi versiya, 90 FPS ochilgan.", "link": "https://t.me/colinuzb"},
-    "Gta V": {"title": "GTA V Mobile", "desc": "Grafikasi kuchaytirilgan norasmiy port.", "link": "https://t.me/colinuzb"},
-    "Call Of Duty": {"title": "Call of Duty Mobile", "desc": "Jangovar rejim va yangi xaritalar.", "link": "https://t.me/colinuzb"},
-    "Zombie Catshers": {"title": "Zombie Catchers", "desc": "Cheksiz pullar bilan mod qilingan.", "link": "https://t.me/colinuzb"},
-    "Farm Ville 2": {"title": "FarmVille 2", "desc": "Fermer xo'jaligi simulyatori.", "link": "https://t.me/colinuzb"},
-    "Extreme Car": {"title": "Extreme Car Driving", "desc": "Barcha mashinalar ochilgan.", "link": "https://t.me/colinuzb"},
-    "Dr,Driving": {"title": "Dr. Driving", "desc": "Afsonaviy mashina haydash o'yini.", "link": "https://t.me/colinuzb"},
+    "Minecraft": {"title": "Minecraft 1.19.8v", "desc": "Minecraft 2025 yili colin tomonidan vzlom qilingan versiya.", "link": "https://t.me/fayl_manzili"},
+    "Pubg": {"title": "PUBG Mobile", "desc": "Eng so'nggi versiya, 90 FPS ochilgan.", "link": "https://play.google.com"},
+    "Gta V": {"title": "GTA V Mobile", "desc": "Grafikasi kuchaytirilgan norasmiy port.", "link": "https://example.com"},
+    "Call Of Duty": {"title": "Call of Duty Mobile", "desc": "Jangovar rejim va yangi xaritalar.", "link": "https://example.com"},
+    "Zombie Catchers": {"title": "Zombie Catchers", "desc": "Cheksiz pullar bilan mod qilingan.", "link": "https://example.com"},
+    "Farm Ville 2": {"title": "FarmVille 2", "desc": "Fermer xo'jaligi simulyatori.", "link": "https://example.com"},
+    "Extreme Car": {"title": "Extreme Car Driving", "desc": "Barcha mashinalar ochilgan.", "link": "https://example.com"},
+    "Dr,Driving": {"title": "Dr. Driving", "desc": "Afsonaviy mashina haydash o'yini.", "link": "https://example.com"},
 
     # Ilovalar
-    "Telegram": {"title": "Telegram Premium", "desc": "Premium funksiyalar (norasmiy).", "link": "https://t.me/colinuzb"},
-    "YouTube": {"title": "YouTube Vanced", "desc": "Reklamasiz YouTube ko'rish.", "link": "https://t.me/colinuzb"},
-    "Node Video": {"title": "Node Video Pro", "desc": "Professional video montaj dasturi.", "link": "https://t.me/colinuzb"},
-    "Cap Cut": {"title": "CapCut Pro", "desc": "Barcha effektlar ochiq.", "link": "https://t.me/colinuzb"},
-    "Alight Motion": {"title": "Alight Motion XML", "desc": "Suv belgisisiz (No Watermark).", "link": "https://t.me/colinuzb"},
-    "Zarchiver": {"title": "ZArchiver Pro", "desc": "Fayllarni arxivlash uchun eng zo'r dastur.", "link": "https://t.me/colinuzb"},
+    "Telegram": {"title": "Telegram Premium", "desc": "Premium funksiyalar (norasmiy).", "link": "https://example.com"},
+    "YouTube": {"title": "YouTube Vanced", "desc": "Reklamasiz YouTube ko'rish.", "link": "https://example.com"},
+    "Node Video": {"title": "Node Video Pro", "desc": "Professional video montaj dasturi.", "link": "https://example.com"},
+    "Cap Cut": {"title": "CapCut Pro", "desc": "Barcha effektlar ochiq.", "link": "https://example.com"},
+    "Alight Motion": {"title": "Alight Motion XML", "desc": "Suv belgisisiz (No Watermark).", "link": "https://example.com"},
+    "Zarchiver": {"title": "ZArchiver Pro", "desc": "Fayllarni arxivlash uchun eng zo'r dastur.", "link": "https://example.com"},
 
     # Dasturlar
-    "ChatGpt": {"title": "ChatGPT AI", "desc": "Sun'iy intellekt yordamchisi.", "link": "https://t.me/colinuzb"},
-    "KreaAi": {"title": "Krea AI", "desc": "Rasmlarni generatsiya qilish.", "link": "https://t.me/colinuzb"},
-    "Design": {"title": "Design Tools", "desc": "Dizaynerlar uchun kerakli to'plam.", "link": "https://t.me/colinuzb"},
-    "Upscaler": {"title": "Image Upscaler", "desc": "Rasm sifatini oshiruvchi dastur.", "link": "https://t.me/colinuzb"},
-    "Enhancer": {"title": "Photo Enhancer", "desc": "Eski rasmlarni tiklash.", "link": "https://t.me/colinuzb"},
+    "ChatGpt": {"title": "ChatGPT AI", "desc": "Sun'iy intellekt yordamchisi.", "link": "https://openai.com"},
+    "KreaAi": {"title": "Krea AI", "desc": "Rasmlarni generatsiya qilish.", "link": "https://krea.ai"},
+    "Design": {"title": "Design Tools", "desc": "Dizaynerlar uchun kerakli to'plam.", "link": "https://example.com"},
+    "Upscaler": {"title": "Image Upscaler", "desc": "Rasm sifatini oshiruvchi dastur.", "link": "https://example.com"},
+    "Enhancer": {"title": "Photo Enhancer", "desc": "Eski rasmlarni tiklash.", "link": "https://example.com"},
 
     # Packlar
-    "ColinShop": {"title": "Colin Shop Pack", "desc": "Internet magazin uchun tayyor kodlar.", "link": "https://t.me/colinuzb"},
-    "Responsive": {"title": "Responsive UI", "desc": "Moslashuvchan dizayn elementlari.", "link": "https://t.me/colinuzb"},
-    "Navbar": {"title": "Navbar Pack", "desc": "Saytlar uchun menyu turlari.", "link": "https://t.me/colinuzb"},
-    "Animated": {"title": "Animated Pack", "desc": "CSS va JS animatsiyalar.", "link": "https://t.me/colinuzb"},
-    "Host": {"title": "Hosting Script", "desc": "Hosting sayti uchun shablon.", "link": "https://t.me/colinuzb"},
-    "Portfolio": {"title": "Portfolio Web", "desc": "Shaxsiy portfolio sayt shabloni.", "link": "https://t.me/colinuzb"},
+    "ColinShop": {"title": "Colin Shop Pack", "desc": "Internet magazin uchun tayyor kodlar.", "link": "https://example.com"},
+    "Responsive": {"title": "Responsive UI", "desc": "Moslashuvchan dizayn elementlari.", "link": "https://example.com"},
+    "Navbar": {"title": "Navbar Pack", "desc": "Saytlar uchun menyu turlari.", "link": "https://example.com"},
+    "Animated": {"title": "Animated Pack", "desc": "CSS va JS animatsiyalar.", "link": "https://example.com"},
+    "Host": {"title": "Hosting Script", "desc": "Hosting sayti uchun shablon.", "link": "https://example.com"},
+    "Portfolio": {"title": "Portfolio Web", "desc": "Shaxsiy portfolio sayt shabloni.", "link": "https://example.com"},
 }
 
-# --- 2. KANALLAR (BLOGERLAR) MA'LUMOTI ---
-# Bu yerda har bir blogerning 4 ta silkasini to'g'rilab chiqing
 CHANNELS_DATA = {
-    "ColinUzb": {
-        "desc": "Minecraft bo'yicha eng zo'r kontentlar muallifi.",
-        "yt": "https://www.youtube.com/@ColinUzb",
-        "insta": "https://www.instagram.com/colinuzb",
-        "tg": "https://t.me/ColinUzb",
-        "chat": "https://t.me/colinchat"
-    },
-    "JovaUzb": {
-        "desc": "Qiziqarli o'yinlar va strimlar.",
-        "yt": "https://www.youtube.com/@JovaUzb",
-        "insta": "https://www.instagram.com/jovauzb",
-        "tg": "https://t.me/JovaUzb",
-        "chat": "https://t.me/jovachat"
-    },
-    "uzMarcos": {
-        "desc": "Texnologiya va o'yin olami yangiliklari.",
-        "yt": "https://www.youtube.com/@uzMarcos",
-        "insta": "https://www.instagram.com/uzmarcos",
-        "tg": "https://t.me/uzMarcos",
-        "chat": "https://t.me/marcoschat"
-    }
+    "ColinUzb": {"desc": "Minecraft...", "yt": "https://youtube.com", "insta": "https://instagram.com", "tg": "https://t.me/ColinUzb", "chat": "https://t.me/chat"},
+    "JovaUzb": {"desc": "O'yinlar...", "yt": "https://youtube.com", "insta": "https://instagram.com", "tg": "https://t.me/JovaUzb", "chat": "https://t.me/chat"},
+    "uzMarcos": {"desc": "Texnologiya...", "yt": "https://youtube.com", "insta": "https://instagram.com", "tg": "https://t.me/uzMarcos", "chat": "https://t.me/chat"}
 }
 
 # --- TUGMALAR ---
@@ -95,9 +78,10 @@ def main_menu(user_id):
     kb = [
         [KeyboardButton(text="O'yinlar"), KeyboardButton(text="Ilovalar")],
         [KeyboardButton(text="Dasturlar"), KeyboardButton(text="Packlar")],
-        [KeyboardButton(text="Kanallar")] # "Fayllar" o'rniga "Kanallar" bo'ldi
+        [KeyboardButton(text="Kanallar")]
     ]
-    if user_id == ADMIN_ID:
+    # O'ZGARISH #2: user_id == ADMIN_ID emas, "user_id in ADMINS" qilinadi
+    if user_id in ADMINS:
         kb.append([KeyboardButton(text="📊 Status")])
     return ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
 
@@ -150,7 +134,6 @@ async def back_to_main(message: types.Message):
 @dp.message(F.text == "Kanallar")
 async def channels_menu(message: types.Message):
     if not await is_subscribed(message.from_user.id): return
-    # Kanallar ro'yxati tugmasi
     kb = ReplyKeyboardMarkup(keyboard=[
         [KeyboardButton(text="ColinUzb"), KeyboardButton(text="JovaUzb")],
         [KeyboardButton(text="uzMarcos")],
@@ -164,7 +147,7 @@ async def games_menu(message: types.Message):
     kb = ReplyKeyboardMarkup(keyboard=[
         [KeyboardButton(text="Minecraft"), KeyboardButton(text="Pubg")],
         [KeyboardButton(text="Gta V"), KeyboardButton(text="Call Of Duty")],
-        [KeyboardButton(text="Zombie Catshers"), KeyboardButton(text="Farm Ville 2")],
+        [KeyboardButton(text="Zombie Catchers"), KeyboardButton(text="Farm Ville 2")],
         [KeyboardButton(text="Extreme Car"), KeyboardButton(text="Dr,Driving")],
         [KeyboardButton(text="⬅️ Orqaga")]
     ], resize_keyboard=True)
@@ -202,15 +185,13 @@ async def packs_menu(message: types.Message):
     ], resize_keyboard=True)
     await message.answer("Packlar bo'limi:", reply_markup=kb)
 
-# --- 1. ODDIY CONTENT HANDLER (O'yin, Ilova...) ---
+# --- CONTENT HANDLERS ---
 @dp.message(lambda message: message.text in CONTENT_DATA)
 async def send_simple_content(message: types.Message):
     if not await is_subscribed(message.from_user.id): return
     data = CONTENT_DATA[message.text]
-    # Rasm: img/minecraft.png
     clean_name = message.text.lower().replace(" ", "").replace(",", "")
     photo_path = f"img/{clean_name}.png"
-
     caption_text = f"<b>{data['title']}</b>\n\n{data['desc']}"
     btn = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="📥 Yuklab Olish", url=data['link'])]])
 
@@ -220,40 +201,27 @@ async def send_simple_content(message: types.Message):
     else:
         await message.answer(f"⚠️ Rasm topilmadi: {photo_path}\n" + caption_text, reply_markup=btn, parse_mode="HTML")
 
-# --- 2. KANALLAR (PROFILE) HANDLER ---
 @dp.message(lambda message: message.text in CHANNELS_DATA)
 async def send_channel_profile(message: types.Message):
     if not await is_subscribed(message.from_user.id): return
-
     data = CHANNELS_DATA[message.text]
-
-    # Rasm: img/profile/colinuzb.png
-    clean_name = message.text.lower().replace(" ", "") # colinuzb
+    clean_name = message.text.lower().replace(" ", "")
     photo_path = f"img/profile/{clean_name}.png"
-
     caption_text = f"<b>👤 {message.text}</b>\n\n{data['desc']}"
-
-    # 4 ta tugma (2 qator, 2 ustun qilib joylaymiz chiroyli chiqishi uchun)
     kb = InlineKeyboardMarkup(inline_keyboard=[
-        [
-            InlineKeyboardButton(text="YouTube", url=data['yt']),
-            InlineKeyboardButton(text="Instagram", url=data['insta'])
-        ],
-        [
-            InlineKeyboardButton(text="Telegram", url=data['tg']),
-            InlineKeyboardButton(text="Chat", url=data['chat'])
-        ]
+        [InlineKeyboardButton(text="YouTube", url=data['yt']), InlineKeyboardButton(text="Instagram", url=data['insta'])],
+        [InlineKeyboardButton(text="Telegram", url=data['tg']), InlineKeyboardButton(text="Chat", url=data['chat'])]
     ])
 
     if os.path.exists(photo_path):
         photo = FSInputFile(photo_path)
         await message.answer_photo(photo=photo, caption=caption_text, reply_markup=kb, parse_mode="HTML")
     else:
-        # Rasm topilmasa faqat text
         await message.answer(f"⚠️ Profil rasmi topilmadi: {photo_path}\n" + caption_text, reply_markup=kb, parse_mode="HTML")
 
 # --- ADMIN STATUS ---
-@dp.message(F.text == "📊 Status", F.from_user.id == ADMIN_ID)
+# O'ZGARISH #3: F.from_user.id.in_(ADMINS) deb o'zgartirildi
+@dp.message(F.text == "📊 Status", F.from_user.id.in_(ADMINS))
 async def status_cmd(message: types.Message):
     cursor.execute("SELECT full_name, username, user_id FROM users")
     users = cursor.fetchall()

@@ -1,5 +1,4 @@
 
-# 8045767418:AAF7XXhXqG9a_uT2uQaEAPiFaRWpTYQltds
 # 7788334322 
 
 import asyncio
@@ -12,7 +11,7 @@ from aiogram.filters import Command
 from aiogram.fsm.storage.memory import MemoryStorage
 
 # --- KONFIGURATSIYA ---
-API_TOKEN = '8045767418:AAF7XXhXqG9a_uT2uQaEAPiFaRWpTYQltds'
+API_TOKEN = ''
 ADMIN_ID = 7788334322  # O'zingizning ID
 CHANNELS = ["@colinuzb", "@colincode", "@ibrohimweb"] 
 
