@@ -8,7 +8,7 @@ from aiogram.filters import Command
 from aiogram.fsm.storage.memory import MemoryStorage
 
 # --- KONFIGURATSIYA ---
-API_TOKEN = '7948805017:AAHHGGFYE6BTi96YbZaJDaTrNX91qHU2NXw'
+API_TOKEN = 'BOT TOKENINI QOYNG'
 
 # O'ZGARISH #1: Adminlar ro'yxati (List) qilib yoziladi
 ADMINS = [7788334322, 8075485288, 12345678]
