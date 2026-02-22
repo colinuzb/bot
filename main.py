@@ -8,12 +8,12 @@ from aiogram.filters import Command
 from aiogram.fsm.storage.memory import MemoryStorage
 
 # --- KONFIGURATSIYA ---
-API_TOKEN = 'BOT TOKENINI QOYNG'
+API_TOKEN = ''
 
 # O'ZGARISH #1: Adminlar ro'yxati (List) qilib yoziladi
 ADMINS = [7788334322, 8075485288, 12345678]
 
-CHANNELS = ["@colinuzb", "@colincode", "@ibrohimweb"]
+CHANNELS = ["@colinuzb", "@colincode", "@ibrohimweb", "@cypixel"]
 
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token=API_TOKEN)
