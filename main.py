@@ -13,7 +13,7 @@ API_TOKEN = ''
 # O'ZGARISH #1: Adminlar ro'yxati (List) qilib yoziladi
 ADMINS = [7788334322, 8075485288, 12345678]
 
-CHANNELS = ["@colinuzb", "@colincode", "@ibrohimweb", "@cypixel"]
+CHANNELS = ["@colinuzb", "@colincode", "@ibrohimweb"]
 
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token=API_TOKEN)
@@ -68,9 +68,9 @@ CONTENT_DATA = {
 }
 
 CHANNELS_DATA = {
-    "ColinUzb": {"desc": "Minecraft...", "yt": "https://youtube.com", "insta": "https://instagram.com", "tg": "https://t.me/ColinUzb", "chat": "https://t.me/chat"},
-    "JovaUzb": {"desc": "O'yinlar...", "yt": "https://youtube.com", "insta": "https://instagram.com", "tg": "https://t.me/JovaUzb", "chat": "https://t.me/chat"},
-    "uzMarcos": {"desc": "Texnologiya...", "yt": "https://youtube.com", "insta": "https://instagram.com", "tg": "https://t.me/uzMarcos", "chat": "https://t.me/chat"}
+    "ColinUzb": {"desc": "Minecraft...", "yt": "https://youtube.com/@colinuzb", "insta": "https://instagram.com/colinuzb", "tg": "https://t.me/ColinUzb", "chat": "https://t.me/ColinUzb"},
+    "JovaUzb": {"desc": "O'yinlar...", "yt": "https://youtube.com/@colinuzb", "insta": "https://instagram.com/colinuzb", "tg": "https://t.me/ColinUzb", "chat": "https://t.me/ColinUzb"},
+    "uzMarcos": {"desc": "Texnologiya...", "yt": "https://youtube.com/@colinuzb", "insta": "https://instagram.com/colinuzb", "tg": "https://t.me/ColinUzb", "chat": "https://t.me/ColinUzb"}
 }
 
 # --- TUGMALAR ---
@@ -238,3 +238,5 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
+
