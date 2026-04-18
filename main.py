@@ -11,9 +11,9 @@ from aiogram.fsm.storage.memory import MemoryStorage
 API_TOKEN = ''
 
 # O'ZGARISH #1: Adminlar ro'yxati (List) qilib yoziladi
-ADMINS = [7788334322, 8075485288, 12345678]
+ADMINS = [7788334322, 8075485288, 5748209449]
 
-CHANNELS = ["@colinuzb", "@colincode", "@ibrohimweb"]
+CHANNELS = ["@colinuzb", "@colincode", "@ibrohimweb", "@JovaMc"]
 
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token=API_TOKEN)
